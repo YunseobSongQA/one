@@ -75,6 +75,15 @@ body {
   padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
 }
 
+/* 새 버전 배너 (탭바 바로 위) */
+#update {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 /* 넓은 화면에서도 읽기 좋은 폭으로 */
 #top > *, #view:not(.fill) > * { max-width: 720px; margin-inline: auto; }
 

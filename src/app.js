@@ -54,5 +54,28 @@ const refreshToday = () => {
 document.addEventListener('visibilitychange', refreshToday);
 setInterval(refreshToday, 60_000);
 
+// 서비스 워커: 새 버전이 설치되면 배너를 띄우고, 탭하면 적용해서 다시 연다.
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const registration = await navigator.serviceWorker.register('sw.js');
+  const banner = document.querySelector('#update');
+  const offer = (worker) => {
+    banner.hidden = false;
+    banner.onclick = () => worker.postMessage('skipWaiting');
+  };
+  if (registration.waiting && navigator.serviceWorker.controller) offer(registration.waiting);
+  registration.onupdatefound = () => {
+    const worker = registration.installing;
+    worker.onstatechange = () => {
+      if (worker.state === 'installed' && navigator.serviceWorker.controller) offer(worker);
+    };
+  };
+  navigator.serviceWorker.oncontrollerchange = () => location.reload();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) registration.update().catch(() => {}); // 오프라인이면 다음에 다시 확인
+  });
+}
+
 storage.requestPersist();
 render();
+registerServiceWorker();
