@@ -1,0 +1,510 @@
+/* ── 앱 색 (라이트/다크) ── */
+:root {
+  color-scheme: light dark;
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --text: #1c1c1e;
+  --sub: #6e6e73;
+  --line: #d8d8dc;
+  --fill: #e8e8ed;
+  --accent: #3e9142;
+  --danger: #d93025;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --text: #f2f2f7;
+    --sub: #98989f;
+    --line: #38383a;
+    --fill: #2c2c2e;
+    --accent: #5cb860;
+    --danger: #ff6b5e;
+  }
+}
+
+/* ── 기본 레이아웃: 상단바 + 본문 + 탭바 ── */
+* { box-sizing: border-box; }
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 탭하는 곳은 길게 눌러도 글자 선택·메뉴가 뜨지 않게 */
+#tabs, .chart, .habit, .seg, .toggle {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+#top {
+  padding: calc(env(safe-area-inset-top) + 10px) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+#view {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left));
+}
+
+/* 만다라트: 스크롤 없이 남은 영역을 다 쓴다 */
+#view.fill {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
+}
+
+/* 넓은 화면에서도 읽기 좋은 폭으로 */
+#top > *, #view:not(.fill) > * { max-width: 720px; margin-inline: auto; }
+
+#tabs {
+  display: flex;
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+#tabs button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0 5px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+#tabs button[aria-current="page"] { color: var(--accent); }
+
+#tabs svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── 공통 요소 ── */
+button, input, select, textarea { font: inherit; color: inherit; }
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled { opacity: 0.3; cursor: default; }
+
+h1 { margin: 0; font-size: 22px; line-height: 1.25; }
+h2 { margin: 0 0 10px; color: var(--sub); font-size: 14px; font-weight: 600; }
+p { margin: 0; }
+
+.sub { color: var(--sub); font-size: 13px; }
+.hint { margin-bottom: 12px; color: var(--sub); font-size: 13px; }
+.spacer { flex: 1; }
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.row + .row { margin-top: 8px; }
+
+.card {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.button {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--fill);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.button.primary { background: var(--accent); color: #fff; }
+.button.danger { color: var(--danger); }
+.button.primary.danger { background: var(--danger); color: #fff; }
+
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.text-button, .crumb { color: var(--accent); font-size: 15px; font-weight: 600; }
+.icon-button { width: 40px; height: 40px; font-size: 28px; line-height: 1; color: var(--accent); }
+
+input:not([type="checkbox"], [type="radio"]), select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  font-size: 16px; /* 16px보다 작으면 아이폰이 확대한다 */
+}
+
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+textarea { resize: vertical; }
+
+/* 토글 스위치 */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+
+.toggle i {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--fill);
+  transition: background 0.2s;
+}
+
+.toggle i::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.toggle input:checked + i { background: var(--accent); }
+.toggle input:checked + i::after { transform: translateX(16px); }
+.toggle input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 세그먼트 버튼 (차트 전환, 칸 종류) */
+.seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--fill);
+}
+
+.seg button, .seg span {
+  display: block;
+  padding: 5px 14px;
+  border-radius: 7px;
+  color: var(--sub);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg [aria-pressed="true"], .seg input:checked + span {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+
+/* 진행률 막대 */
+.bar {
+  display: block;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e2e2e2;
+}
+
+.bar::after {
+  content: "";
+  display: block;
+  width: calc(var(--rate) * 100%);
+  height: 100%;
+  background: #3e9142;
+}
+
+/* ── 오늘 ── */
+.mode-title { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+
+.mode {
+  padding: 2px 12px;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 20px;
+}
+
+.mode.commute { background: #8a9a1c; }
+.mode.home { background: #e07a3f; }
+.mode.weekend { background: #3b82c4; }
+
+.principle { font-size: 14px; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-head h2 { margin: 0; }
+
+.list {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface);
+  list-style: none;
+}
+
+.list li + li { border-top: 1px solid var(--line); }
+
+.habit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.habit:active { background: var(--fill); }
+
+.habit .check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+}
+
+.habit[aria-pressed="true"] .check { border-color: var(--accent); background: var(--accent); }
+
+.habit[aria-pressed="true"] .check::after {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border: solid #fff;
+  border-width: 0 0 2px 2px;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.habit .name { flex: 1; min-width: 0; }
+.habit small { display: block; color: var(--sub); font-size: 12px; }
+.habit .count { color: var(--sub); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+.empty { padding: 32px 0; color: var(--sub); text-align: center; }
+
+/* ── 만다라트 차트 (오타니 형식, 다크 모드에서도 흰 배경. 색은 mandalart/view.js의 이미지 저장과 같다) ── */
+.zoom-bar { margin-bottom: 8px; }
+
+/* 남은 영역의 짧은 변에 맞춰 칸 크기를 px로 계산한다(aspect-ratio·1fr 트랙을 쓰지 않는다). */
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+
+.chart {
+  --cell: calc((min(100cqw, 100cqh) - 18px) / 9); /* 굵은 선 3px × 4 + 가는 선 1px × 6 */
+  --block: calc(var(--cell) * 3 + 2px);
+  display: grid;
+  grid-template-columns: repeat(3, var(--block));
+  grid-template-rows: repeat(3, var(--block));
+  gap: 3px;
+  padding: 3px;
+  background: #9b9b9b;
+}
+
+.chart.zoom {
+  --cell: calc((min(100cqw, 100cqh) - 8px) / 3);
+  grid-template-columns: var(--block);
+  grid-template-rows: var(--block);
+}
+
+.block {
+  display: grid;
+  grid-template-columns: repeat(3, var(--cell));
+  grid-template-rows: repeat(3, var(--cell));
+  gap: 1px;
+  background: #d0d0d0;
+}
+
+.cell {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: calc(var(--cell) * 0.05);
+  background: #ffffff;
+  color: #2a2a2a;
+  font-size: calc(var(--cell) * 0.17);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.cell.theme { background: #c4d82e; }
+
+.cell.goal {
+  background: #3e9142;
+  color: #ffffff;
+  font-size: calc(var(--cell) * 0.155);
+}
+
+/* 중앙에서 바깥 블록을 가리키는 화살표. 위쪽·좌상 모양을 --rotate만큼 돌려 글자 뒤에 깐다. */
+.arrow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='%23c4d82e' d='M50 4 L92 48 L64 48 L64 100 L36 100 L36 48 L8 48 Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  transform: rotate(var(--rotate));
+}
+
+.arrow.diag::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='%23c4d82e' d='M3 3 L64 8 L44 24 L120 100 L100 120 L24 44 L8 64 Z'/%3E%3C/svg%3E");
+}
+
+.cell .plus { color: #c8c8c8; font-weight: 400; }
+.cell.theme .plus { color: rgba(0, 0, 0, 0.3); }
+.cell.goal .plus { color: rgba(255, 255, 255, 0.6); }
+
+.cell.link span { text-decoration: underline; text-underline-offset: 0.15em; }
+
+.cell .bar {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 6%;
+  height: 6%;
+}
+
+/* ── 회고 ── */
+.week { flex: 1; text-align: center; }
+
+.rates { margin: 0; padding: 0; list-style: none; }
+
+.rates li {
+  display: grid;
+  grid-template-columns: 8.5em 1fr 3em;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.rates span { overflow-wrap: anywhere; }
+.rates small { grid-column: span 2; color: var(--sub); }
+.rates .bar { height: 8px; }
+.rates b { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+.note { display: grid; gap: 6px; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
+
+/* ── 설정 ── */
+.days { display: flex; gap: 6px; margin-bottom: 12px; }
+.days label { flex: 1; }
+.days input { position: absolute; opacity: 0; pointer-events: none; }
+
+.days span {
+  display: block;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: var(--fill);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.days input:checked + span { background: var(--accent); color: #fff; }
+
+.field {
+  display: grid;
+  grid-template-columns: 8em 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+form.card h2:not(:first-child) { margin-top: 18px; }
+
+/* ── 시트 (칸 편집, 확인) ── */
+#sheet {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90dvh;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+#sheet::backdrop { background: rgba(0, 0, 0, 0.4); }
+
+#sheet form {
+  display: grid;
+  gap: 14px;
+  padding: 20px max(18px, env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+}
+
+#sheet h2 { margin: 0; outline: none; }
+#sheet .seg { display: flex; }
+#sheet .seg label { flex: 1; text-align: center; }
+
+#sheet .fields { display: grid; gap: 10px; }
+#sheet .fields label { display: grid; grid-template-columns: 4em 1fr; align-items: center; gap: 10px; }
+#sheet .fields label > span { display: flex; align-items: center; gap: 8px; }
+#sheet [data-count] { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; }
+#sheet [data-count] input { width: 4.5em; }
+#sheet .check { display: flex; align-items: center; gap: 8px; }
+#sheet .check input { width: 22px; height: 22px; accent-color: var(--accent); }
+
+#sheet .actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+[hidden] { display: none !important; }
