@@ -2,6 +2,7 @@ import { createState, dateKey } from '../core/logic.js';
 import { esc } from '../core/view.js';
 import { emptyChart } from '../mandalart/logic.js';
 import * as seed from '../seed.js';
+import * as sync from '../sync/view.js';
 import { parseBackup, setSettings } from './logic.js';
 
 const DAYS = [[1, '월'], [2, '화'], [3, '수'], [4, '목'], [5, '금'], [6, '토'], [0, '일']];
@@ -31,6 +32,12 @@ export function render({ header, main }, ctx) {
       </div>
     </section>
     <section class="card">
+      <h2>기기 간 동기화</h2>
+      <p class="hint">Cloudflare에 정한 SYNC_TOKEN을 넣으면 앱을 열 때 서버와 맞추고, 바꾼 뒤 1분이 지나면 서버에 올려요. 비우면 동기화하지 않아요.</p>
+      <input type="password" id="sync-token" value="${esc(sync.getToken())}" placeholder="SYNC_TOKEN" autocomplete="off">
+      <div class="row sync"><button class="button" id="sync-now">지금 동기화</button><span class="sub">${esc(sync.syncStatus())}</span></div>
+    </section>
+    <section class="card">
       <h2>빈 차트로 시작</h2>
       <p class="hint">목표·테마·칸을 모두 비우고 처음부터 작성합니다. 실행 전에 백업 파일을 내려받아요.</p>
       <div class="buttons">${charts.map((c) => `<button class="button" data-empty="${c.id}">${esc(c.title)} 비우기</button>`).join('')}</div>
@@ -46,6 +53,12 @@ export function render({ header, main }, ctx) {
   form.oninput = () => ctx.update((s) => setSettings(s, readSettings(form, s.settings)), { render: false });
 
   main.querySelector('#export').onclick = () => download(ctx.state);
+
+  main.querySelector('#sync-token').onchange = (e) => sync.setToken(e.target.value);
+  main.querySelector('#sync-now').onclick = async () => {
+    await sync.syncNow(ctx);
+    ctx.render();
+  };
 
   main.querySelector('#import').onchange = async (e) => {
     const file = e.target.files[0];

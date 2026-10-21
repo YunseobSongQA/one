@@ -5,6 +5,7 @@ import * as today from './today/view.js';
 import * as mandalart from './mandalart/view.js';
 import * as review from './review/view.js';
 import * as settings from './settings/view.js';
+import * as sync from './sync/view.js';
 
 const views = { today, mandalart, review, settings };
 const header = document.querySelector('#top');
@@ -23,7 +24,14 @@ const ctx = {
   update(change, { render: rerender = true } = {}) {
     state = { ...change(state), updatedAt: new Date().toISOString() };
     storage.save(state);
+    sync.schedule(ctx);
     if (rerender) render();
+  },
+  // 동기화로 받은 state를 그대로 쓴다(updatedAt 유지).
+  replace(next) {
+    state = next;
+    storage.save(state);
+    render();
   },
   render,
 };
@@ -51,8 +59,14 @@ sheet.onclick = (e) => {
 const refreshToday = () => {
   if (tab === 'today' && !document.hidden) render();
 };
-document.addEventListener('visibilitychange', refreshToday);
 setInterval(refreshToday, 60_000);
+
+// 앱으로 돌아오면 서버와 맞추고, 떠날 때는 기다리던 업로드를 바로 보낸다.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return sync.flush(ctx);
+  refreshToday();
+  sync.syncNow(ctx);
+});
 
 // 서비스 워커: 새 버전이 설치되면 배너를 띄우고, 탭하면 적용해서 다시 연다.
 async function registerServiceWorker() {
@@ -79,3 +93,4 @@ async function registerServiceWorker() {
 storage.requestPersist();
 render();
 registerServiceWorker();
+sync.syncNow(ctx);

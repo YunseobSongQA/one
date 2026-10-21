@@ -132,3 +132,11 @@ tests/                  node:test — core, today, mandalart, sync
 - 가정 모드: 커리어 항목(하위 차트에만 있는 습관, 예: 현직자 커피챗)도 숨긴다. 일을 떠올리게 하는 배지·경고·개수는 띄우지 않는다.
 - '전체 보기': 모든 습관.
 - habitKey가 같은 습관은 한 줄로 합친다(먼저 나온 칸의 텍스트·빈도·시간대).
+
+## 5. 동기화 (3단계)
+
+- 서버: `functions/api/state.js`가 `GET/PUT /api/state`를 받는다. `Authorization: Bearer <SYNC_TOKEN>`으로 인증하고, KV 바인딩 `SYNC_KV`의 키 `state` 하나만 get/put 한다.
+- 클라이언트: 토큰이 있을 때만 동작한다. 앱을 열거나 다시 볼 때 GET → `syncDirection(local, remote)`
+  - push: 서버가 비었거나 이 기기가 더 최신 → PUT
+  - pull: 서버가 더 최신 → 확인을 받고 이 기기 state를 서버 것으로 바꾼다(updatedAt 그대로)
+  - 변경 후 60초 디바운스로 PUT, 앱을 떠날 때(visibilitychange) 기다리던 PUT은 바로 보낸다.

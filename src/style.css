@@ -480,6 +480,7 @@ textarea { resize: vertical; }
 }
 
 form.card h2:not(:first-child) { margin-top: 18px; }
+.sync { margin-top: 10px; }
 
 /* ── 시트 (칸 편집, 확인) ── */
 #sheet {

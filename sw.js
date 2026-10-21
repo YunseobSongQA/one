@@ -1,6 +1,6 @@
 // 앱 셸을 캐시해서 오프라인에서도 열리게 한다.
 // 앱 파일을 바꿀 때마다 CACHE_VERSION을 올리고, 파일을 추가·삭제하면 SHELL도 고친다(CLAUDE.md 규칙).
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE = `mandalart-v${CACHE_VERSION}`;
 const SHELL = [
   './',
@@ -23,6 +23,8 @@ const SHELL = [
   'src/review/view.js',
   'src/settings/logic.js',
   'src/settings/view.js',
+  'src/sync/logic.js',
+  'src/sync/view.js',
 ];
 
 self.addEventListener('install', (event) => {
